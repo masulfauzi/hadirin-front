@@ -141,3 +141,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+dump/*
+*.md
+!README.md
+prompt.txt
+template/*
+.DS_Store
