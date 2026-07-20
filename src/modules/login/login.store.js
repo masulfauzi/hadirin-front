@@ -9,13 +9,14 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
 
   const isAuthenticated = computed(() => !!token.value)
+  const isAdmin = computed(() => user.value?.roles?.some((r) => r.kode_role === 'ADMIN') ?? false)
 
   async function login(username, password) {
     const { data } = await authService.login(username, password)
     token.value = data.token
-    user.value = data.user
     localStorage.setItem('token', data.token)
     useMenuStore().reset()
+    await fetchUser()
   }
 
   function logout() {
@@ -31,5 +32,5 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = data
   }
 
-  return { token, user, isAuthenticated, login, logout, fetchUser }
+  return { token, user, isAuthenticated, isAdmin, login, logout, fetchUser }
 })

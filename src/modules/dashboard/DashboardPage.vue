@@ -4,8 +4,12 @@ import BaseCard from '../../shared/components/BaseCard.vue'
 import BaseBadge from '../../shared/components/BaseBadge.vue'
 import BaseTable from '../../shared/components/BaseTable.vue'
 import { karyawanService } from '../karyawan/karyawan.service'
+import { divisiService } from '../divisi/divisi.service'
 import { dataPresensiService } from '../data-presensi/data-presensi.service'
 import { ijinService } from '../manajemen-ijin/manajemen-ijin.service'
+import { useAuthStore } from '../login/login.store'
+
+const auth = useAuthStore()
 
 const DAY_LABEL = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 
@@ -16,13 +20,14 @@ function todayStr() {
 }
 
 const karyawanList = ref([])
+const divisions = ref([])
 const presensiList = ref([])
 const ijinList = ref([])
 const statusIjinList = ref([])
 const loading = ref(false)
 const error = ref('')
 
-async function loadAll() {
+async function loadAdminDashboard() {
   loading.value = true
   error.value = ''
   try {
@@ -42,6 +47,27 @@ async function loadAll() {
     loading.value = false
   }
 }
+
+async function loadMyProfile() {
+  loading.value = true
+  error.value = ''
+  try {
+    const [karyawanRes, divisiRes] = await Promise.all([karyawanService.list(), divisiService.list()])
+    karyawanList.value = karyawanRes.data
+    divisions.value = divisiRes.data
+  } catch (err) {
+    error.value = err.message ?? 'Gagal memuat data profil.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const myKaryawan = computed(
+  () => karyawanList.value.find((k) => k.kode_identitas === auth.user?.kode_identitas) ?? null,
+)
+const myDivisiNama = computed(
+  () => divisions.value.find((d) => d.id === myKaryawan.value?.division_id)?.nama_divisi ?? '-',
+)
 
 const presensiHariIni = computed(() => presensiList.value.filter((p) => p.tanggal.slice(0, 10) === todayStr()))
 
@@ -106,13 +132,32 @@ const weekly = computed(() => {
   }))
 })
 
-onMounted(loadAll)
+onMounted(() => {
+  if (auth.isAdmin) {
+    loadAdminDashboard()
+  } else {
+    loadMyProfile()
+  }
+})
 </script>
 
 <template>
   <div class="space-y-6">
     <p v-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
+
+    <BaseCard v-else-if="!auth.isAdmin">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-primary" style="font-size: 32px">person</span>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-on-surface">{{ myKaryawan?.nama_lengkap ?? auth.user?.username ?? '-' }}</h3>
+          <p class="text-sm text-outline mt-1">{{ myDivisiNama }}</p>
+          <p class="text-sm text-outline">{{ myKaryawan?.jabatan ?? '-' }}</p>
+        </div>
+      </div>
+    </BaseCard>
 
     <template v-else>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
