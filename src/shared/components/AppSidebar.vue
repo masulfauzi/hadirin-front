@@ -8,11 +8,17 @@ const menu = [
   { name: 'data-presensi', label: 'Presensi', icon: 'calendar_today' },
   { name: 'rekap-presensi', label: 'Rekap', icon: 'analytics' },
   { name: 'manajemen-ijin', label: 'Ijin', icon: 'event_busy' },
+  { name: 'karyawan', label: 'Karyawan', icon: 'badge' },
+  { name: 'divisi', label: 'Divisi', icon: 'apartment' },
+  { name: 'hari-libur', label: 'Hari Libur', icon: 'event' },
+  { name: 'pengguna', label: 'Pengguna', icon: 'person' },
+  { name: 'role', label: 'Role', icon: 'shield' },
+  { name: 'menu-manager', label: 'Menu', icon: 'menu' },
 ]
 </script>
 
 <template>
-  <aside class="fixed left-0 top-0 h-screen w-[240px] bg-primary-dark flex flex-col py-6 px-4 z-50">
+  <aside class="fixed left-0 top-0 h-screen w-[240px] bg-primary-dark flex flex-col py-6 px-4 z-50 overflow-y-auto">
     <div class="mb-10 px-4">
       <h1 class="text-xl font-bold text-white">HADIR.IN</h1>
       <p class="text-xs text-white/60">Admin Panel</p>
@@ -33,8 +39,8 @@ const menu = [
 
     <div class="mt-auto pt-6 border-t border-white/10">
       <div class="px-4 py-2">
-        <p class="text-sm font-medium text-white">{{ auth.user?.name ?? 'Admin' }}</p>
-        <p class="text-xs text-white/60">{{ auth.user?.role ?? 'Administrator' }}</p>
+        <p class="text-sm font-medium text-white">{{ auth.user?.username ?? 'Admin' }}</p>
+        <p class="text-xs text-white/60">{{ auth.user?.kode_identitas ?? 'Administrator' }}</p>
       </div>
       <button
         class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"

@@ -6,7 +6,7 @@ import { useAuthStore } from './login.store'
 const router = useRouter()
 const auth = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -15,10 +15,10 @@ async function handleSubmit() {
   error.value = ''
   loading.value = true
   try {
-    await auth.login(email.value, password.value)
+    await auth.login(username.value, password.value)
     router.push('/')
   } catch (err) {
-    error.value = err.response?.data?.message ?? 'Email atau password salah.'
+    error.value = err.message ?? 'Username atau password salah.'
   } finally {
     loading.value = false
   }
@@ -34,13 +34,13 @@ async function handleSubmit() {
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <div class="space-y-2">
-        <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email</label>
+        <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Username</label>
         <input
-          v-model="email"
-          type="email"
+          v-model="username"
+          type="text"
           required
           class="w-full h-10 px-4 bg-slate-50 border border-outline-variant rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-          placeholder="admin@hadirin.com"
+          placeholder="admin"
         />
       </div>
       <div class="space-y-2">
@@ -64,5 +64,10 @@ async function handleSubmit() {
         {{ loading ? 'Memproses...' : 'Masuk' }}
       </button>
     </form>
+
+    <p class="text-sm text-on-surface-variant text-center mt-6">
+      Belum punya akun?
+      <RouterLink to="/register" class="text-primary font-semibold hover:underline">Daftar di sini</RouterLink>
+    </p>
   </div>
 </template>

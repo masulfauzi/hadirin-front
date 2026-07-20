@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import router from '../../router'
-import api from '../../shared/services/api'
+import { authService } from './login.service'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token'))
@@ -9,8 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-  async function login(email, password) {
-    const { data } = await api.post('/auth/login', { email, password })
+  async function login(username, password) {
+    const { data } = await authService.login(username, password)
     token.value = data.token
     user.value = data.user
     localStorage.setItem('token', data.token)
@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchUser() {
-    const { data } = await api.get('/auth/me')
+    const { data } = await authService.me()
     user.value = data
   }
 
