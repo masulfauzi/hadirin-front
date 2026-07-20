@@ -7,6 +7,9 @@ import BaseButton from '../../shared/components/BaseButton.vue'
 import BaseModal from '../../shared/components/BaseModal.vue'
 import { dataPresensiService } from './data-presensi.service'
 import { karyawanService } from '../karyawan/karyawan.service'
+import { useMenuPermission } from '../../shared/composables/useMenuPermission'
+
+const perm = useMenuPermission()
 
 const STATUS_HADIR_TONE = { tepat_waktu: 'success', terlambat: 'warning' }
 
@@ -157,14 +160,15 @@ onMounted(loadAll)
             </select>
           </div>
         </div>
-        <BaseButton variant="primary" @click="openCreateForm">
+        <BaseButton v-if="perm.canInsert" variant="primary" @click="openCreateForm">
           <span class="material-symbols-outlined text-[20px]">add</span>
           <span>Tambah Presensi</span>
         </BaseButton>
       </div>
     </BaseCard>
 
-    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+    <p v-if="!perm.canRead" class="text-sm text-outline">Anda tidak memiliki izin membaca data ini.</p>
+    <p v-else-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
 
     <BaseTable v-else>
@@ -191,10 +195,10 @@ onMounted(loadAll)
         </td>
         <td class="px-6 py-4 text-right">
           <div class="flex justify-end gap-2">
-            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
+            <button v-if="perm.canUpdate" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
               Edit
             </button>
-            <button class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removePresensi(row)">
+            <button v-if="perm.canDelete" class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removePresensi(row)">
               Hapus
             </button>
           </div>

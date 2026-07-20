@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import router from '../../router'
 import { authService } from './login.service'
+import { useMenuStore } from '../../shared/stores/menu.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token'))
@@ -14,12 +15,14 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = data.token
     user.value = data.user
     localStorage.setItem('token', data.token)
+    useMenuStore().reset()
   }
 
   function logout() {
     token.value = null
     user.value = null
     localStorage.removeItem('token')
+    useMenuStore().reset()
     router.push('/login')
   }
 

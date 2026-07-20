@@ -5,6 +5,9 @@ import BaseButton from '../../shared/components/BaseButton.vue'
 import BaseModal from '../../shared/components/BaseModal.vue'
 import { hariLiburService } from './hari-libur.service'
 import { divisiService } from '../divisi/divisi.service'
+import { useMenuPermission } from '../../shared/composables/useMenuPermission'
+
+const perm = useMenuPermission()
 
 function emptyForm() {
   return { tanggal: '', keterangan: '', division_id: '' }
@@ -94,13 +97,14 @@ onMounted(loadAll)
 <template>
   <div class="space-y-6">
     <div class="flex justify-end">
-      <BaseButton variant="primary" @click="openCreateForm">
+      <BaseButton v-if="perm.canInsert" variant="primary" @click="openCreateForm">
         <span class="material-symbols-outlined text-[20px]">add</span>
         <span>Tambah Hari Libur</span>
       </BaseButton>
     </div>
 
-    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+    <p v-if="!perm.canRead" class="text-sm text-outline">Anda tidak memiliki izin membaca data ini.</p>
+    <p v-else-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
 
     <BaseTable v-else>
@@ -116,10 +120,10 @@ onMounted(loadAll)
         <td class="px-6 py-4 text-sm text-outline">{{ row.division_id ? (divisionMap[row.division_id] ?? '-') : 'Semua Divisi' }}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex justify-end gap-2">
-            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
+            <button v-if="perm.canUpdate" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
               Edit
             </button>
-            <button class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removeHariLibur(row)">
+            <button v-if="perm.canDelete" class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removeHariLibur(row)">
               Hapus
             </button>
           </div>

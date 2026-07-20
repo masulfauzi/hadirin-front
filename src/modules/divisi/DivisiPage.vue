@@ -6,6 +6,9 @@ import BaseTable from '../../shared/components/BaseTable.vue'
 import BaseButton from '../../shared/components/BaseButton.vue'
 import BaseModal from '../../shared/components/BaseModal.vue'
 import { divisiService } from './divisi.service'
+import { useMenuPermission } from '../../shared/composables/useMenuPermission'
+
+const perm = useMenuPermission()
 
 const HARI_LIST = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu']
 const HARI_LABEL = {
@@ -130,13 +133,15 @@ async function submitSchedule() {
   scheduleSaving.value = true
   scheduleError.value = ''
   try {
-    const payload = schedule.value.map((day) => ({
-      hari: day.hari,
-      is_hari_kerja: day.is_hari_kerja,
-      jam_masuk: day.is_hari_kerja && day.jam_masuk ? day.jam_masuk : null,
-      jam_keluar: day.is_hari_kerja && day.jam_keluar ? day.jam_keluar : null,
-      toleransi_menit: day.is_hari_kerja ? day.toleransi_menit : 0,
-    }))
+    const payload = schedule.value
+      .filter((day) => day.is_hari_kerja)
+      .map((day) => ({
+        hari: day.hari,
+        is_hari_kerja: true,
+        jam_masuk: day.jam_masuk || null,
+        jam_keluar: day.jam_keluar || null,
+        toleransi_menit: day.toleransi_menit,
+      }))
     await divisiService.saveSchedules(scheduleDivisionId.value, payload)
     showScheduleModal.value = false
   } catch (err) {
@@ -152,13 +157,14 @@ onMounted(loadDivisions)
 <template>
   <div class="space-y-6">
     <div class="flex justify-end">
-      <BaseButton variant="primary" @click="openCreateForm">
+      <BaseButton v-if="perm.canInsert" variant="primary" @click="openCreateForm">
         <span class="material-symbols-outlined text-[20px]">add</span>
         <span>Tambah Divisi</span>
       </BaseButton>
     </div>
 
-    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+    <p v-if="!perm.canRead" class="text-sm text-outline">Anda tidak memiliki izin membaca data ini.</p>
+    <p v-else-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
 
     <BaseTable v-else>
@@ -178,13 +184,13 @@ onMounted(loadDivisions)
         </td>
         <td class="px-6 py-4 text-right">
           <div class="flex justify-end gap-2">
-            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openScheduleModal(row)">
+            <button v-if="perm.canUpdate" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openScheduleModal(row)">
               Jadwal
             </button>
-            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
+            <button v-if="perm.canUpdate" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant hover:bg-slate-50 transition-colors" @click="openEditForm(row)">
               Edit
             </button>
-            <button class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removeDivisi(row)">
+            <button v-if="perm.canDelete" class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removeDivisi(row)">
               Hapus
             </button>
           </div>

@@ -148,3 +148,7 @@ dump/*
 prompt.txt
 template/*
 .DS_Store
+
+# Local debug scripts
+.debug_login.cjs
+.verify_ui.tmp.cjs

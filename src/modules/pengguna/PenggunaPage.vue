@@ -6,6 +6,9 @@ import BaseButton from '../../shared/components/BaseButton.vue'
 import BaseModal from '../../shared/components/BaseModal.vue'
 import { penggunaService } from './pengguna.service'
 import { authService } from '../login/login.service'
+import { useMenuPermission } from '../../shared/composables/useMenuPermission'
+
+const perm = useMenuPermission()
 
 function emptyForm() {
   return { kode_identitas: '', nama_lengkap: '', username: '', email: '', password: '' }
@@ -69,13 +72,14 @@ onMounted(loadAll)
 <template>
   <div class="space-y-6">
     <div class="flex justify-end">
-      <BaseButton variant="primary" @click="openCreateForm">
+      <BaseButton v-if="perm.canInsert" variant="primary" @click="openCreateForm">
         <span class="material-symbols-outlined text-[20px]">person_add</span>
         <span>Daftarkan Akun</span>
       </BaseButton>
     </div>
 
-    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+    <p v-if="!perm.canRead" class="text-sm text-outline">Anda tidak memiliki izin membaca data ini.</p>
+    <p v-else-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
 
     <BaseTable v-else>
@@ -96,7 +100,7 @@ onMounted(loadAll)
           <BaseBadge :tone="row.is_active ? 'success' : 'neutral'">{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</BaseBadge>
         </td>
         <td class="px-6 py-4 text-right">
-          <button class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removePengguna(row)">
+          <button v-if="perm.canDelete" class="px-3 py-1.5 bg-error text-white text-xs font-bold rounded-lg hover:bg-error/90 transition-colors" @click="removePengguna(row)">
             Hapus
           </button>
         </td>

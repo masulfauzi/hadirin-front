@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../modules/login/login.store'
+import { useMenuStore } from '../shared/stores/menu.store'
 import BlankLayout from '../shared/layouts/BlankLayout.vue'
 import DashboardLayout from '../shared/layouts/DashboardLayout.vue'
 import { loginRoute } from '../modules/login/login.routes'
@@ -14,6 +15,7 @@ import { hariLiburRoute } from '../modules/hari-libur/hari-libur.routes'
 import { penggunaRoute } from '../modules/pengguna/pengguna.routes'
 import { roleRoute } from '../modules/role/role.routes'
 import { menuManagerRoute } from '../modules/menu-manager/menu-manager.routes'
+import { aksesDitolakRoute } from '../modules/akses-ditolak/akses-ditolak.routes'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,6 +33,7 @@ const router = createRouter({
     {
       path: '/',
       component: DashboardLayout,
+      redirect: '/dashboard',
       meta: { requiresAuth: true },
       children: [
         dashboardRoute,
@@ -43,15 +46,22 @@ const router = createRouter({
         penggunaRoute,
         roleRoute,
         menuManagerRoute,
+        aksesDitolakRoute,
       ],
     },
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
   if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) return '/'
+
+  if (to.meta.requiresAuth && to.name !== 'akses-ditolak') {
+    const menu = useMenuStore()
+    await menu.fetchMenu()
+    if (!menu.canAccess(to.path)) return { name: 'akses-ditolak' }
+  }
 })
 
 export default router

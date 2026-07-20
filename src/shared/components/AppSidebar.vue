@@ -1,20 +1,15 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useAuthStore } from '../../modules/login/login.store'
+import { useMenuStore } from '../stores/menu.store'
+import AppSidebarMenuItem from './AppSidebarMenuItem.vue'
 
 const auth = useAuthStore()
+const menu = useMenuStore()
 
-const menu = [
-  { name: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { name: 'data-presensi', label: 'Presensi', icon: 'calendar_today' },
-  { name: 'rekap-presensi', label: 'Rekap', icon: 'analytics' },
-  { name: 'manajemen-ijin', label: 'Ijin', icon: 'event_busy' },
-  { name: 'karyawan', label: 'Karyawan', icon: 'badge' },
-  { name: 'divisi', label: 'Divisi', icon: 'apartment' },
-  { name: 'hari-libur', label: 'Hari Libur', icon: 'event' },
-  { name: 'pengguna', label: 'Pengguna', icon: 'person' },
-  { name: 'role', label: 'Role', icon: 'shield' },
-  { name: 'menu-manager', label: 'Menu', icon: 'menu' },
-]
+onMounted(() => {
+  menu.fetchMenu()
+})
 </script>
 
 <template>
@@ -25,16 +20,11 @@ const menu = [
     </div>
 
     <nav class="flex-1 space-y-1">
-      <RouterLink
-        v-for="item in menu"
-        :key="item.name"
-        :to="{ name: item.name }"
-        class="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-        active-class="bg-white/10 text-white"
-      >
-        <span class="material-symbols-outlined">{{ item.icon }}</span>
-        <span>{{ item.label }}</span>
-      </RouterLink>
+      <p v-if="menu.loading" class="px-4 text-xs text-white/40">Memuat menu...</p>
+      <p v-else-if="menu.loaded && menu.tree.length === 0" class="px-4 text-xs text-white/40">
+        Tidak ada menu untuk role Anda.
+      </p>
+      <AppSidebarMenuItem v-for="item in menu.tree" :key="item.id" :item="item" />
     </nav>
 
     <div class="mt-auto pt-6 border-t border-white/10">

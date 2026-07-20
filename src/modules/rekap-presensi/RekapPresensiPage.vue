@@ -7,6 +7,9 @@ import { dataPresensiService } from '../data-presensi/data-presensi.service'
 import { karyawanService } from '../karyawan/karyawan.service'
 import { divisiService } from '../divisi/divisi.service'
 import { ijinService } from '../manajemen-ijin/manajemen-ijin.service'
+import { useMenuPermission } from '../../shared/composables/useMenuPermission'
+
+const perm = useMenuPermission()
 
 const MONTH_LABEL = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -129,7 +132,8 @@ onMounted(loadAll)
       </div>
     </BaseCard>
 
-    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+    <p v-if="!perm.canRead" class="text-sm text-outline">Anda tidak memiliki izin membaca data ini.</p>
+    <p v-else-if="error" class="text-sm text-error">{{ error }}</p>
     <p v-else-if="loading" class="text-sm text-outline">Memuat...</p>
 
     <BaseTable v-else>
